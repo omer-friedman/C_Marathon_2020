@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <math.h>
 #define FALSE 0
 #define TRUE 1
 
@@ -69,6 +70,7 @@ void Question9();
 float completeSquares(square*, int size);
 int isCompleteSquare(square);
 int getQuarter(point);
+float getDistance(point, point);
 /*----------------------- Question 10: -----------------------*/
 void Question10();
 char* str_insert(char*, char*, char*);
@@ -226,17 +228,27 @@ void Question2(){
     printf("\n Sum:%d\n", num);
 }
 
-int num_sums(int a[], int size, int n){
-    int i, cnt_cur=0;
-    if(size == 0)
+//int num_sums(int* a, int size, int n){
+//    int i, cnt_cur=0;
+//    if(size == 0)
+//        return 0;
+//    for(i=0; i<size; i++){
+//        if(n-a[i] == 0)
+//            cnt_cur++;
+//        else if(n-a[i] > 0)
+//            cnt_cur +=num_sums(a+i+1, size-i-1, n-a[i]);
+//    }
+//    return cnt_cur;
+//}
+
+int num_sums(int *a, int size, int n) {
+    if (size<=0) {
         return 0;
-    for(i=0; i<size; i++){
-        if(n-a[i] == 0)
-            cnt_cur++;
-        else if(n-a[i] > 0)
-            cnt_cur +=num_sums(a+i+1, size-i-1, n-a[i]);
     }
-    return cnt_cur;
+    if (*a > n) {
+        return num_sums(a+1, size-1, n);
+    }
+    return *a == n ? 1 : num_sums(a+1, size-1, n-*a) + num_sums(a+1, size-1, n);
 }
 
 void Question3(){
@@ -451,34 +463,39 @@ pHit** updateMatSize(pHit** oldMat, int old_row, int old_col, int new_row, int n
 
 void Question9(){
     square squares[3];
-    squares[0].pointArr[0].x = 4;  squares[0].pointArr[0].y = 4;
-    squares[0].pointArr[1].x = 4;  squares[0].pointArr[1].y = -4;
-    squares[0].pointArr[2].x = -4; squares[0].pointArr[2].y = -4;
-    squares[0].pointArr[3].x = -4; squares[0].pointArr[3].y = 4;
+    //square[0] is a complete square!
+    squares[0].pointArr[0].x = 50;  squares[0].pointArr[0].y = 50;
+    squares[0].pointArr[1].x = 50;  squares[0].pointArr[1].y = -50;
+    squares[0].pointArr[2].x = -50; squares[0].pointArr[2].y = -50;
+    squares[0].pointArr[3].x = -50; squares[0].pointArr[3].y = 50;
+    //square[1] is not a complete square (distance<10)!
     squares[1].pointArr[0].x = 4;  squares[1].pointArr[0].y = 4;
-    squares[1].pointArr[1].x = -4; squares[1].pointArr[1].y = 4;
-    squares[1].pointArr[2].x = 4;  squares[1].pointArr[2].y = -4;
+    squares[1].pointArr[1].x = 4; squares[1].pointArr[1].y = -4;
+    squares[1].pointArr[2].x = -4;  squares[1].pointArr[2].y = -4;
     squares[1].pointArr[3].x = -4; squares[1].pointArr[3].y = 4;
-    squares[2].pointArr[0].x = 4;  squares[2].pointArr[0].y = 4;
-    squares[2].pointArr[1].x = -4; squares[2].pointArr[1].y = -4;
-    squares[2].pointArr[2].x = 4;  squares[2].pointArr[2].y = -4;
-    squares[2].pointArr[3].x = -4; squares[2].pointArr[3].y = 4;
+    //square[2] is not a complete square (quarters not follow)!
+    squares[2].pointArr[0].x = 50;  squares[2].pointArr[0].y = 50;
+    squares[2].pointArr[1].x = -50; squares[2].pointArr[1].y = 50;
+    squares[2].pointArr[2].x = -50;  squares[2].pointArr[2].y = -50;
+    squares[2].pointArr[3].x = 50; squares[2].pointArr[3].y = -50;
     printf("%f\n", completeSquares(squares, 3));
 }
 
 int isCompleteSquare(square sq){
     int i, cur_qrtr, next_qrtr;
     for(i=0; i<4; i++){
-        cur_qrtr = getQuarter(sq.pointArr[i]);
-        next_qrtr = getQuarter(sq.pointArr[i+1]);
-        if(cur_qrtr == 4)
-            cur_qrtr = 0;
-        if(cur_qrtr == -1 || next_qrtr == -1)
+        if(getDistance(sq.pointArr[i], sq.pointArr[(i+1)%4]) < 10)
             return FALSE;
-        if(cur_qrtr + 1 != next_qrtr)
+        cur_qrtr = getQuarter(sq.pointArr[i]);
+        next_qrtr = getQuarter(sq.pointArr[(i+1)%4]);
+        if(cur_qrtr%4 + 1 != next_qrtr)
             return FALSE;
     }
     return TRUE;
+}
+
+float getDistance(point p1, point p2){
+    return sqrt((p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y));
 }
 
 float completeSquares(square *arr, int size){
